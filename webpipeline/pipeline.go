@@ -38,6 +38,14 @@ func Start(startConfig StartConfig) {
 				{
 					func(wg *sync.WaitGroup) {
 						defer wg.Done()
+						if request.IsUniqFunction != nil {
+							if request.UniqId == "" || request.Source == "" {
+								return
+							}
+							if !request.IsUniqFunction(request.Source, request.UniqId) {
+								return
+							}
+						}
 						if request.FilePath != "" {
 							StoreToFile(request)
 						} else if len(request.LarkContent) != 0 {
@@ -50,7 +58,7 @@ func Start(startConfig StartConfig) {
 							}
 						}
 						if request.SendToChannel && startConfig.OneTimeChannel != nil {
-							startConfig.OneTimeChannel <- request.ContentJson
+							startConfig.OneTimeChannel <- request
 						}
 					}(&wg)
 				}
@@ -70,8 +78,8 @@ func StoreToLarkBitable(larkClient *lark.Client, request StoreRequest) {
 	larkClient.Bitable.AppTableRecord.BatchCreate(context.Background(), req)
 }
 func StoreToNotionDatabase(client *notionapi.Client, request StoreRequest) {
-	log.Printf("Store request: %v", len(request.Content))
-	notionagent.CreateNewPageInDatabase(client, request.Database, request.Content)
+	log.Printf("Store request: %v", len(request.NotionContent))
+	notionagent.CreateNewPageInDatabase(client, request.NotionDatabase, request.NotionContent)
 }
 func StoreToFile(request StoreRequest) {
 	log.Printf("Store request: %v", len(request.FileContent))

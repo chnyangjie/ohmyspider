@@ -9,7 +9,7 @@ type StartConfig struct {
 	NotionToken    string
 	LarkAppId      string
 	LarkToken      string
-	OneTimeChannel chan interface{}
+	OneTimeChannel chan StoreRequest
 }
 
 type StoreType string
@@ -21,8 +21,12 @@ const (
 )
 
 type StoreRequest struct {
-	Database notionapi.DatabaseID
-	Content  map[string]notionapi.Property
+	UniqId         string
+	Source         string
+	IsUniqFunction IsUniqFunction
+
+	NotionDatabase notionapi.DatabaseID
+	NotionContent  map[string]notionapi.Property
 
 	LarkContent  []*larkbitable.AppTableRecord
 	LarkAppToken string
@@ -32,6 +36,7 @@ type StoreRequest struct {
 	FileContent []byte
 
 	SendToChannel bool
-	ContentJson   interface{}
+	ExtraContent  interface{}
 }
 type StoreFunction func(request StoreRequest) error
+type IsUniqFunction func(source, uniqId string) bool
