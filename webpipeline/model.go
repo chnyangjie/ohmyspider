@@ -9,7 +9,7 @@ type StartConfig struct {
 	NotionToken    string
 	LarkAppId      string
 	LarkToken      string
-	OneTimeChannel chan string
+	OneTimeChannel chan interface{}
 }
 
 type StoreType string
@@ -32,6 +32,6 @@ type StoreRequest struct {
 	FileContent []byte
 
 	SendToChannel bool
-	ContentJson   string
+	ContentJson   interface{}
 }
 type StoreFunction func(request StoreRequest) error

@@ -49,7 +49,7 @@ func Start(startConfig StartConfig) {
 								StoreToNotionDatabase(notionClient, request)
 							}
 						}
-						if request.SendToChannel && startConfig.OneTimeChannel != nil && request.ContentJson != "" {
+						if request.SendToChannel && startConfig.OneTimeChannel != nil {
 							startConfig.OneTimeChannel <- request.ContentJson
 						}
 					}(&wg)
