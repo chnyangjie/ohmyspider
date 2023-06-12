@@ -6,9 +6,10 @@ import (
 )
 
 type StartConfig struct {
-	NotionToken string
-	LarkAppId   string
-	LarkToken   string
+	NotionToken    string
+	LarkAppId      string
+	LarkToken      string
+	OneTimeChannel chan string
 }
 
 type StoreType string
@@ -29,5 +30,8 @@ type StoreRequest struct {
 
 	FilePath    string
 	FileContent []byte
+
+	SendToChannel bool
+	ContentJson   string
 }
 type StoreFunction func(request StoreRequest) error
