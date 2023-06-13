@@ -17,8 +17,6 @@ type Proxy struct {
 
 type HTTPMethod string
 
-type CrawlCallback func(request HTTPRequest, response []byte)
-
 var (
 	HTTP_METHOD_GET  = HTTPMethod("GET")
 	HTTP_METHOD_POST = HTTPMethod("POST")
