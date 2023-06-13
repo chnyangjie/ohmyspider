@@ -8,12 +8,14 @@ import (
 type CrawlerExecutor struct {
 	crawlerChannel chan HTTPRequest
 	wg             sync.WaitGroup
+	quit           chan bool
 }
 
 func NewCrawlerExecutor() CrawlerExecutor {
 	return CrawlerExecutor{
 		crawlerChannel: make(chan HTTPRequest, 10000),
 		wg:             sync.WaitGroup{},
+		quit:           make(chan bool),
 	}
 }
 func (e *CrawlerExecutor) Start() {
@@ -40,9 +42,9 @@ func (e *CrawlerExecutor) startCrawl() {
 					}
 				}()
 			}
-		default:
+		case <-e.quit:
 			{
-				log.Printf("No request to process")
+				log.Printf("quit")
 				return
 			}
 		}
@@ -55,5 +57,6 @@ func (e *CrawlerExecutor) Crawl(req HTTPRequest) {
 
 func (e *CrawlerExecutor) Stop() {
 	e.wg.Wait()
+	e.quit <- true
 	close(e.crawlerChannel)
 }

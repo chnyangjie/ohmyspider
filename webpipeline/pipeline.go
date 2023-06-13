@@ -14,6 +14,7 @@ type PipelineExecutor struct {
 	config       StartConfig
 	notionClient *notionapi.Client
 	larkClient   *lark.Client
+	quit         chan bool
 }
 
 func NewPipelineExecutor(config StartConfig) PipelineExecutor {
@@ -21,6 +22,7 @@ func NewPipelineExecutor(config StartConfig) PipelineExecutor {
 		storeChann: make(chan StoreRequest, 1000),
 		wg:         sync.WaitGroup{},
 		config:     config,
+		quit:       make(chan bool),
 	}
 }
 
@@ -35,6 +37,7 @@ func (e *PipelineExecutor) Start() {
 }
 func (e *PipelineExecutor) Stop() {
 	e.wg.Wait()
+	e.quit <- true
 	close(e.storeChann)
 }
 func (e *PipelineExecutor) Store(req StoreRequest) {
@@ -73,7 +76,7 @@ func (e *PipelineExecutor) startConsume() {
 					}
 				}(&e.wg)
 			}
-		default:
+		case <-e.quit:
 			{
 				log.Printf("No request to process")
 				return
