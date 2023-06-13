@@ -15,6 +15,8 @@ type Proxy struct {
 	Port int
 }
 
+type CrawlCallback func(request HTTPRequest, response []byte)
+
 type HTTPMethod string
 
 var (
