@@ -2,7 +2,6 @@ package storeagentmysql
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/chnyangjie/ohmyspider/webpipeline"
@@ -14,8 +13,8 @@ type StoreAgentMysql struct {
 	db         *sql.DB
 }
 
-func NewStoreAgentMysql(agentId, username, password, dbName, lunk string, uniqFunc webpipeline.IsUniqFunction) *StoreAgentMysql {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s/%s", username, password, lunk, dbName))
+func NewStoreAgentMysql(agentId, link string, uniqFunc webpipeline.IsUniqFunction) *StoreAgentMysql {
+	db, err := sql.Open("mysql", link)
 	if err != nil {
 		log.Printf("Open mysql error: %v", err)
 		return nil

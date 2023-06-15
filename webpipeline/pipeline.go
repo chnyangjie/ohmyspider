@@ -3,38 +3,25 @@ package webpipeline
 import (
 	"log"
 	"sync"
-
-	"github.com/jomei/notionapi"
-	lark "github.com/larksuite/oapi-sdk-go/v3"
 )
 
 type PipelineExecutor struct {
-	storeChann   chan StoreRequest
-	wg           sync.WaitGroup
-	config       StartConfig
-	notionClient *notionapi.Client
-	larkClient   *lark.Client
-	quit         chan bool
-	agentList    []StoreAgent
+	storeChann chan StoreRequest
+	wg         sync.WaitGroup
+	quit       chan bool
+	agentList  []StoreAgent
 }
 
-func NewPipelineExecutor(config StartConfig, agentList []StoreAgent) PipelineExecutor {
+func NewPipelineExecutor(agentList []StoreAgent) PipelineExecutor {
 	return PipelineExecutor{
 		storeChann: make(chan StoreRequest, 1000),
 		wg:         sync.WaitGroup{},
-		config:     config,
 		quit:       make(chan bool),
 		agentList:  agentList,
 	}
 }
 
 func (e *PipelineExecutor) Start() {
-	if e.config.NotionToken != "" {
-		e.notionClient = notionapi.NewClient(notionapi.Token(e.config.NotionToken))
-	}
-	if e.config.LarkToken != "" && e.config.LarkAppId != "" {
-		e.larkClient = lark.NewClient(e.config.LarkAppId, e.config.LarkToken)
-	}
 	go e.startConsume()
 }
 func (e *PipelineExecutor) Stop() {
@@ -55,6 +42,9 @@ func (e *PipelineExecutor) startConsume() {
 				func(wg *sync.WaitGroup) {
 					defer wg.Done()
 					for _, agent := range e.agentList {
+						if agent == nil {
+							continue
+						}
 						if request.AgentId != nil && *request.AgentId != agent.AgentId() {
 							continue
 						}
@@ -70,6 +60,9 @@ func (e *PipelineExecutor) startConsume() {
 			{
 				log.Printf("Closing pipeline")
 				for _, agent := range e.agentList {
+					if agent == nil {
+						continue
+					}
 					err := agent.Close()
 					if err != nil {
 						log.Printf("Closing agent %s failed: %+v", agent.AgentId(), err)
