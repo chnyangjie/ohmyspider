@@ -15,14 +15,16 @@ type PipelineExecutor struct {
 	notionClient *notionapi.Client
 	larkClient   *lark.Client
 	quit         chan bool
+	agentList    []StoreAgent
 }
 
-func NewPipelineExecutor(config StartConfig) PipelineExecutor {
+func NewPipelineExecutor(config StartConfig, agentList []StoreAgent) PipelineExecutor {
 	return PipelineExecutor{
 		storeChann: make(chan StoreRequest, 1000),
 		wg:         sync.WaitGroup{},
 		config:     config,
 		quit:       make(chan bool),
+		agentList:  agentList,
 	}
 }
 
@@ -52,35 +54,46 @@ func (e *PipelineExecutor) startConsume() {
 			{
 				func(wg *sync.WaitGroup) {
 					defer wg.Done()
-					if request.IsUniqFunction != nil {
-						if request.UniqId == "" || request.Source == "" {
-							return
+					for _, agent := range e.agentList {
+						if request.AgentId != nil && *request.AgentId != agent.AgentId() {
+							continue
 						}
-						if !request.IsUniqFunction(request.Source, request.UniqId) {
-							return
+						if agent.CanStore(request) {
+							if isUniq(agent, request) {
+								go agent.DoStore(request)
+							}
 						}
-					}
-					if request.FilePath != "" {
-						StoreToFile(request)
-					} else if len(request.LarkContent) != 0 {
-						if e.larkClient != nil {
-							StoreToLarkBitable(e.larkClient, request)
-						}
-					} else {
-						if e.notionClient != nil {
-							StoreToNotionDatabase(e.notionClient, request)
-						}
-					}
-					if request.SendToChannel && e.config.OneTimeChannel != nil {
-						e.config.OneTimeChannel <- request
 					}
 				}(&e.wg)
 			}
 		case <-e.quit:
 			{
-				log.Printf("No request to process")
+				log.Printf("Closing pipeline")
+				for _, agent := range e.agentList {
+					err := agent.Close()
+					if err != nil {
+						log.Printf("Closing agent %s failed: %+v", agent.AgentId(), err)
+					}
+				}
 				return
 			}
 		}
 	}
+}
+
+func isUniq(agent StoreAgent, req StoreRequest) bool {
+	if req.Source == nil || req.UniqId == nil {
+		return true
+	}
+	if req.IsUniqFunction != nil {
+		if !req.IsUniqFunction(*req.Source, *req.UniqId) {
+			return false
+		}
+	}
+	if agent.UniqFunc() != nil {
+		if !agent.UniqFunc()(*req.Source, *req.UniqId) {
+			return false
+		}
+	}
+	return true
 }

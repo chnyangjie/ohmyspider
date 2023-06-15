@@ -1,10 +1,5 @@
 package webpipeline
 
-import (
-	"github.com/jomei/notionapi"
-	larkbitable "github.com/larksuite/oapi-sdk-go/v3/service/bitable/v1"
-)
-
 type StartConfig struct {
 	NotionToken    string
 	LarkAppId      string
@@ -21,22 +16,13 @@ const (
 )
 
 type StoreRequest struct {
-	UniqId         string
-	Source         string
+	UniqId         *string
+	Source         *string
 	IsUniqFunction IsUniqFunction
+	AgentId        *string
 
-	NotionDatabase notionapi.DatabaseID
-	NotionContent  map[string]notionapi.Property
-
-	LarkContent  []*larkbitable.AppTableRecord
-	LarkAppToken string
-	LarkTableId  string
-
-	FilePath    string
-	FileContent []byte
-
-	SendToChannel bool
-	ExtraContent  interface{}
+	StoreParams  []string
+	StoreContent []interface{}
 }
 type StoreFunction func(request StoreRequest) error
 type IsUniqFunction func(source, uniqId string) bool
