@@ -50,7 +50,7 @@ func (e *PipelineExecutor) startConsume() {
 						}
 						if agent.CanStore(request) {
 							if isUniq(agent, request) {
-								go agent.DoStore(request)
+								agent.DoStore(request)
 							}
 						}
 					}
