@@ -131,7 +131,7 @@ func genRichTextObj(content []string) []notionapi.RichText {
 		start := 0
 		for start < len(r) {
 			if len(r) <= start+1500 {
-				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : len(r)-1])}})
+				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start:])}})
 			} else {
 				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : start+1500])}})
 			}
