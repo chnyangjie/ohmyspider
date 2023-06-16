@@ -65,6 +65,15 @@ func PropertyToVar(property notionapi.Property) (interface{}, error) {
 
 }
 
+func VarToBlock(variable interface{}, blockType notionapi.BlockType) (notionapi.Block, error) {
+	switch blockType {
+	case notionapi.BlockTypeParagraph:
+		{
+			return newParagraph(variable)
+		}
+	}
+	return nil, fmt.Errorf("unsupport variable: %+v", variable)
+}
 func VarToProperty(variable interface{}, propertyType notionapi.PropertyType) (notionapi.Property, error) {
 	if propertyType == "" {
 		if _, ok := variable.(string); ok {
@@ -96,6 +105,10 @@ func VarToProperty(variable interface{}, propertyType notionapi.PropertyType) (n
 			{
 				return newRelation(variable)
 			}
+		case notionapi.PropertyTypeNumber:
+			{
+				return newNumber(variable)
+			}
 		default:
 			{
 				log.Printf("unsupport propertyType: %+v", propertyType)
@@ -105,12 +118,59 @@ func VarToProperty(variable interface{}, propertyType notionapi.PropertyType) (n
 	}
 	return nil, fmt.Errorf("unsupport variable: %+v", variable)
 }
-func newRichText(content interface{}) (*notionapi.RichTextProperty, error) {
-	if d, ok := content.(string); ok {
-		return &notionapi.RichTextProperty{RichText: []notionapi.RichText{{Text: &notionapi.Text{Content: d}}}}, nil
+func newNumber(content interface{}) (*notionapi.NumberProperty, error) {
+	if d, ok := content.(float64); ok {
+		return &notionapi.NumberProperty{Number: d}, nil
 	}
 	return nil, fmt.Errorf("unsupport content type: %+v", content)
 }
+func genRichTextObj(content []string) []notionapi.RichText {
+	result := []notionapi.RichText{}
+	for _, item := range content {
+		r := []rune(item)
+		start := 0
+		for start < len(r) {
+			if len(r) <= start+1500 {
+				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : len(r)-1])}})
+			} else {
+				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : start+1500])}})
+			}
+			start += 1500
+		}
+	}
+	if len(result) == 0 {
+		result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: ""}})
+	}
+	return result
+}
+func newRichText(content interface{}) (*notionapi.RichTextProperty, error) {
+	result := notionapi.RichTextProperty{}
+	raw := []string{}
+	if d, ok := content.(string); ok {
+		raw = append(raw, d)
+	} else if d, ok := content.([]string); ok {
+		raw = append(raw, d...)
+	}
+	result.RichText = append(result.RichText, genRichTextObj(raw)...)
+	return &result, fmt.Errorf("unsupport content type: %+v", content)
+}
+func newParagraph(content interface{}) (*notionapi.ParagraphBlock, error) {
+	result := notionapi.ParagraphBlock{
+		BasicBlock: notionapi.BasicBlock{
+			Type:   notionapi.BlockTypeParagraph,
+			Object: notionapi.ObjectTypeBlock,
+		},
+	}
+	raw := []string{}
+	if d, ok := content.(string); ok {
+		raw = append(raw, d)
+	} else if d, ok := content.([]string); ok {
+		raw = append(raw, d...)
+	}
+	result.Paragraph.RichText = append(result.Paragraph.RichText, genRichTextObj(raw)...)
+	return &result, nil
+}
+
 func newRelation(content interface{}) (*notionapi.RelationProperty, error) {
 	if d, ok := content.([]string); ok {
 		r := notionapi.RelationProperty{Relation: []notionapi.Relation{}}
