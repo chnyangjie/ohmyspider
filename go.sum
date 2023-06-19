@@ -1,5 +1,5 @@
-github.com/chnyangjie/ohmynotionagent v0.0.5 h1:6gcujwJKAIuCwuabpJGqHtJfXt+4gqebYg15vWkPASE=
-github.com/chnyangjie/ohmynotionagent v0.0.5/go.mod h1:xOmgpRJX0xk3uD97ZSnA+Ig/hvEUwMHXe4ojriap9BM=
+github.com/chnyangjie/ohmynotionagent v0.0.6 h1:c42iRwKbXgEShYNG50sP5olx7+v1wTkH0aQ+bgAkZu8=
+github.com/chnyangjie/ohmynotionagent v0.0.6/go.mod h1:xOmgpRJX0xk3uD97ZSnA+Ig/hvEUwMHXe4ojriap9BM=
 github.com/jomei/notionapi v1.12.1 h1:X2IoTlU4h6szqVHVpM+Umau5lf4cxanTTQsbcm707HQ=
 github.com/jomei/notionapi v1.12.1/go.mod h1:wgxFlmxL+oIfxclWkt8jta0PkcBepajish2uCxzBxTo=
 github.com/larksuite/oapi-sdk-go/v3 v3.0.22 h1:2x8YKtO1kHwba1zHJ2JXsnwWzVjzqkcLDJu4YAhAjo8=

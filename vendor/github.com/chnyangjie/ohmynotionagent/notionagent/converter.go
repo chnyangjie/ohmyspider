@@ -65,7 +65,7 @@ func PropertyToVar(property notionapi.Property) (interface{}, error) {
 
 }
 
-func VarToBlock(variable interface{}, blockType notionapi.BlockType) (notionapi.Block, error) {
+func VarToBlock(variable interface{}, blockType notionapi.BlockType) ([]notionapi.Block, error) {
 	switch blockType {
 	case notionapi.BlockTypeParagraph:
 		{
@@ -74,6 +74,43 @@ func VarToBlock(variable interface{}, blockType notionapi.BlockType) (notionapi.
 	}
 	return nil, fmt.Errorf("unsupport variable: %+v", variable)
 }
+func newParagraph(content interface{}) ([]notionapi.Block, error) {
+	result := []notionapi.ParagraphBlock{
+		{
+			BasicBlock: notionapi.BasicBlock{
+				Type:   notionapi.BlockTypeParagraph,
+				Object: notionapi.ObjectTypeBlock,
+			},
+		},
+	}
+	raw := []string{}
+	if d, ok := content.(string); ok {
+		raw = append(raw, d)
+	} else if d, ok := content.([]string); ok {
+		raw = append(raw, d...)
+	}
+	count := 0
+	raws := genRichTextObj(raw)
+	for _, item := range raws {
+		count += 1
+		if count > 190 {
+			result = append(result, notionapi.ParagraphBlock{
+				BasicBlock: notionapi.BasicBlock{
+					Type:   notionapi.BlockTypeParagraph,
+					Object: notionapi.ObjectTypeBlock,
+				},
+			})
+			count = 1
+		}
+		result[len(result)-1].Paragraph.RichText = append(result[len(result)-1].Paragraph.RichText, item)
+	}
+	r := []notionapi.Block{}
+	for _, item := range result {
+		r = append(r, notionapi.Block(item))
+	}
+	return r, nil
+}
+
 func VarToProperty(variable interface{}, propertyType notionapi.PropertyType) (notionapi.Property, error) {
 	if propertyType == "" {
 		if _, ok := variable.(string); ok {
@@ -130,12 +167,12 @@ func genRichTextObj(content []string) []notionapi.RichText {
 		r := []rune(item)
 		start := 0
 		for start < len(r) {
-			if len(r) <= start+1500 {
+			if len(r) <= start+1900 {
 				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start:])}})
 			} else {
-				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : start+1500])}})
+				result = append(result, notionapi.RichText{Text: &notionapi.Text{Content: string(r[start : start+1900])}})
 			}
-			start += 1500
+			start += 1900
 		}
 	}
 	if len(result) == 0 {
@@ -153,22 +190,6 @@ func newRichText(content interface{}) (*notionapi.RichTextProperty, error) {
 	}
 	result.RichText = append(result.RichText, genRichTextObj(raw)...)
 	return &result, fmt.Errorf("unsupport content type: %+v", content)
-}
-func newParagraph(content interface{}) (*notionapi.ParagraphBlock, error) {
-	result := notionapi.ParagraphBlock{
-		BasicBlock: notionapi.BasicBlock{
-			Type:   notionapi.BlockTypeParagraph,
-			Object: notionapi.ObjectTypeBlock,
-		},
-	}
-	raw := []string{}
-	if d, ok := content.(string); ok {
-		raw = append(raw, d)
-	} else if d, ok := content.([]string); ok {
-		raw = append(raw, d...)
-	}
-	result.Paragraph.RichText = append(result.Paragraph.RichText, genRichTextObj(raw)...)
-	return &result, nil
 }
 
 func newRelation(content interface{}) (*notionapi.RelationProperty, error) {
