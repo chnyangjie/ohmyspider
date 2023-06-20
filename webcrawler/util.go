@@ -29,6 +29,10 @@ func execute(request HTTPRequest) ([]byte, error) {
 		_url = fmt.Sprintf("%s?%s", request.URL, paramsString)
 	}
 	req, _ := http.NewRequest(string(request.Method), _url, nil)
+	if len(request.Headers) !=0 {
+		for k, v := range request.Headers {
+			req.Header.Add(k, v)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15")
 	parseFormErr := req.ParseForm()
 	if parseFormErr != nil {

@@ -6,6 +6,7 @@ type HTTPRequest struct {
 	URL       string
 	Method    HTTPMethod
 	URLParams map[string]string
+	Headers   map[string]string
 	Callback  CrawlCallback
 	Proxy     *Proxy
 	Extra     map[string]interface{}
