@@ -93,7 +93,7 @@ func newParagraph(content interface{}) ([]notionapi.Block, error) {
 	raws := genRichTextObj(raw)
 	for _, item := range raws {
 		count += 1
-		if count > 190 {
+		if count > 100 {
 			result = append(result, notionapi.ParagraphBlock{
 				BasicBlock: notionapi.BasicBlock{
 					Type:   notionapi.BlockTypeParagraph,
