@@ -43,6 +43,7 @@ func (a *StoreAgentFile) DoStore(req webpipeline.StoreRequest) error {
 	if len(req.StoreParams) == len(req.StoreContent) {
 		for i := 0; i < len(req.StoreParams); i++ {
 			data := req.StoreContent[i].([]byte)
+			os.Create(req.StoreParams[i])
 			file, _ := os.OpenFile(req.StoreParams[i], os.O_CREATE|os.O_WRONLY, 0644)
 			defer file.Close()
 			file.Write(data)
