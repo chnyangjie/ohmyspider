@@ -31,6 +31,13 @@ func CreateNewPageWithBlockInDatabase(client *notionapi.Client, database notiona
 		Properties: content,
 	}
 	if len(blocks) > 0 {
+		for _, block := range blocks {
+			if d, ok := block.(notionapi.ImageBlock); ok {
+				req.Cover = &d.Image
+				req.Cover.Caption = []notionapi.RichText{}
+				break
+			}
+		}
 		req.Children = blocks
 	}
 	resp, err := client.Page.Create(context.Background(), &req)

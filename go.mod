@@ -3,7 +3,7 @@ module github.com/chnyangjie/ohmyspider
 go 1.20
 
 require (
-	github.com/chnyangjie/ohmynotionagent v0.0.7
+	github.com/chnyangjie/ohmynotionagent v0.0.8
 	github.com/jomei/notionapi v1.12.1
 	github.com/larksuite/oapi-sdk-go/v3 v3.0.22
 	go.mongodb.org/mongo-driver v1.11.7
