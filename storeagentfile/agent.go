@@ -3,6 +3,7 @@ package storeagentfile
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/chnyangjie/ohmyspider/webpipeline"
 )
@@ -39,12 +40,21 @@ func (a *StoreAgentFile) CanStore(req webpipeline.StoreRequest) bool {
 	}
 	return true
 }
+func create(p string) (*os.File, error) {
+	if err := os.MkdirAll(filepath.Dir(p), 0770); err != nil {
+		return nil, err
+	}
+	return os.Create(p)
+}
 func (a *StoreAgentFile) DoStore(req webpipeline.StoreRequest) error {
 	if len(req.StoreParams) == len(req.StoreContent) {
 		for i := 0; i < len(req.StoreParams); i++ {
 			data := req.StoreContent[i].([]byte)
-			os.Create(req.StoreParams[i])
-			file, _ := os.OpenFile(req.StoreParams[i], os.O_CREATE|os.O_WRONLY, 0644)
+			file, err := create(req.StoreParams[i])
+			if err != nil {
+				log.Printf("StoreAgentFile: create file error: %v", err)
+				return err
+			}
 			defer file.Close()
 			file.Write(data)
 		}

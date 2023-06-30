@@ -1,6 +1,7 @@
 package webcrawler
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -28,16 +29,22 @@ func execute(request HTTPRequest) ([]byte, error) {
 		paramsString := values.Encode()
 		_url = fmt.Sprintf("%s?%s", request.URL, paramsString)
 	}
-	req, _ := http.NewRequest(string(request.Method), _url, nil)
+	var req *http.Request
+	if request.Body != "" {
+		body := bytes.NewBufferString(request.Body)
+		req, _ = http.NewRequest(string(request.Method), _url, body)
+	} else {
+		req, _ = http.NewRequest(string(request.Method), _url, nil)
+	}
 	for k, v := range request.Headers {
 		req.Header.Add(k, v)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15")
-	parseFormErr := req.ParseForm()
-	if parseFormErr != nil {
-		log.Println(parseFormErr)
-		return nil, parseFormErr
-	}
+	// parseFormErr := req.ParseForm()
+	// if parseFormErr != nil {
+	// 	log.Println(parseFormErr)
+	// 	return nil, parseFormErr
+	// }
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Failure : ", err)
