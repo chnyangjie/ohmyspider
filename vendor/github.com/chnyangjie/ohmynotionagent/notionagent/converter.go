@@ -70,6 +70,10 @@ func VarToBlock(variable interface{}, blockType notionapi.BlockType) ([]notionap
 		{
 			return newParagraph(variable)
 		}
+	case notionapi.BlockQuote:
+		{
+			return newQuote(variable)
+		}
 	case notionapi.BlockTypeHeading1, notionapi.BlockTypeHeading2, notionapi.BlockTypeHeading3:
 		{
 			return newHeading(variable, blockType)

@@ -17,6 +17,9 @@ func newNumber(content interface{}) (*notionapi.NumberProperty, error) {
 func genRichTextObj(content []string) []notionapi.RichText {
 	result := []notionapi.RichText{}
 	for _, item := range content {
+		if item == "" {
+			continue
+		}
 		r := []rune(item)
 		start := 0
 		for start < len(r) {
@@ -42,7 +45,10 @@ func newRichText(content interface{}) (*notionapi.RichTextProperty, error) {
 		raw = append(raw, d...)
 	}
 	result.RichText = append(result.RichText, genRichTextObj(raw)...)
-	return &result, fmt.Errorf("unsupport content type: %+v", content)
+	if len(result.RichText) == 0 {
+		return nil, fmt.Errorf("unsupport content type: %+v", content)
+	}
+	return &result, nil
 }
 
 func newRelation(content interface{}) (*notionapi.RelationProperty, error) {
@@ -128,6 +134,42 @@ func newImage(content interface{}) ([]notionapi.Block, error) {
 			},
 		}, nil
 	}
+}
+func newQuote(content interface{}) ([]notionapi.Block, error) {
+	result := []notionapi.QuoteBlock{
+		{
+			BasicBlock: notionapi.BasicBlock{
+				Type:   notionapi.BlockQuote,
+				Object: notionapi.ObjectTypeBlock,
+			},
+		},
+	}
+	raw := []string{}
+	if d, ok := content.(string); ok {
+		raw = append(raw, d)
+	} else if d, ok := content.([]string); ok {
+		raw = append(raw, d...)
+	}
+	count := 0
+	raws := genRichTextObj(raw)
+	for _, item := range raws {
+		count += 1
+		if count > 100 {
+			result = append(result, notionapi.QuoteBlock{
+				BasicBlock: notionapi.BasicBlock{
+					Type:   notionapi.BlockTypeParagraph,
+					Object: notionapi.ObjectTypeBlock,
+				},
+			})
+			count = 1
+		}
+		result[len(result)-1].Quote.RichText = append(result[len(result)-1].Quote.RichText, item)
+	}
+	r := []notionapi.Block{}
+	for _, item := range result {
+		r = append(r, notionapi.Block(item))
+	}
+	return r, nil
 }
 func newParagraph(content interface{}) ([]notionapi.Block, error) {
 	result := []notionapi.ParagraphBlock{
