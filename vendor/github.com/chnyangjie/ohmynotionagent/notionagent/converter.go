@@ -82,6 +82,10 @@ func VarToBlock(variable interface{}, blockType notionapi.BlockType) ([]notionap
 		{
 			return newImage(variable)
 		}
+	case notionapi.BlockTypeTableBlock:
+		{
+			return newTableBlock(variable)
+		}
 	}
 	return nil, fmt.Errorf("unsupport variable: %+v", variable)
 }
@@ -124,6 +128,10 @@ func VarToProperty(variable interface{}, propertyType notionapi.PropertyType) (n
 		case notionapi.PropertyTypeNumber:
 			{
 				return newNumber(variable)
+			}
+		case notionapi.PropertyTypeCheckbox:
+			{
+				return newCheckbox(variable)
 			}
 		default:
 			{

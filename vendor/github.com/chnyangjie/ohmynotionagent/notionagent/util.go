@@ -14,6 +14,12 @@ func newNumber(content interface{}) (*notionapi.NumberProperty, error) {
 	}
 	return nil, fmt.Errorf("unsupport content type: %+v", content)
 }
+func newCheckbox(content interface{}) (*notionapi.CheckboxProperty, error) {
+	if d, ok := content.(bool); ok {
+		return &notionapi.CheckboxProperty{Checkbox: d}, nil
+	}
+	return nil, fmt.Errorf("unsupport content type: %+v", content)
+}
 func genRichTextObj(content []string) []notionapi.RichText {
 	result := []notionapi.RichText{}
 	for _, item := range content {
@@ -112,6 +118,46 @@ func newDate(content interface{}) (*notionapi.DateProperty, error) {
 		return r, nil
 	}
 	return nil, fmt.Errorf("unsupport content type: %+v", content)
+}
+func newTableBlock(content interface{}) ([]notionapi.Block, error) {
+	if d, ok := content.([][]string); !ok {
+		return nil, fmt.Errorf("unsupport content type: %+v", content)
+	} else {
+		if len(d) == 0 {
+			return nil, fmt.Errorf("empty content: %+v", content)
+		}
+		rows := []notionapi.Block{}
+		for _, rawRow := range d {
+			row := notionapi.TableRowBlock{
+				BasicBlock: notionapi.BasicBlock{
+					Type:   notionapi.BlockTypeTableRowBlock,
+					Object: notionapi.ObjectTypeBlock,
+				},
+				TableRow: notionapi.TableRow{
+					Cells: [][]notionapi.RichText{},
+				},
+			}
+			for _, rawCell := range rawRow {
+				cell := genRichTextObj([]string{rawCell})
+				row.TableRow.Cells = append(row.TableRow.Cells, cell)
+			}
+			rows = append(rows, row)
+		}
+		block := []notionapi.Block{
+			notionapi.TableBlock{
+				BasicBlock: notionapi.BasicBlock{
+					Type:   notionapi.BlockTypeTableBlock,
+					Object: notionapi.ObjectTypeBlock,
+				},
+				Table: notionapi.Table{
+					TableWidth:      len(d[0]),
+					HasColumnHeader: true,
+					Children:        rows,
+				},
+			},
+		}
+		return block, nil
+	}
 }
 
 func newImage(content interface{}) ([]notionapi.Block, error) {
