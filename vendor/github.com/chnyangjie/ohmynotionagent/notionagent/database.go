@@ -50,6 +50,16 @@ func CreateNewPageWithBlockInDatabase(client *notionapi.Client, database notiona
 		}
 		req.Children = blocks
 	}
+	if icon, ok := content["Icon"]; ok {
+		if s, ok := icon.(*notionapi.URLProperty); ok {
+			req.Icon = &notionapi.Icon{
+				Type: notionapi.FileTypeExternal,
+				External: &notionapi.FileObject{
+					URL: s.URL,
+				},
+			}
+		}
+	}
 	resp, err := client.Page.Create(context.Background(), &req)
 	if err != nil {
 		log.Printf("Failed to create page: %v", err)
