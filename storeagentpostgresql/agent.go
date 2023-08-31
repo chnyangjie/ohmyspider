@@ -15,7 +15,7 @@ type StoreAgentPostgresql struct {
 }
 
 func NewStoreAgentPostgresql(agentId, link string, uniqFunc webpipeline.IsUniqFunction) *StoreAgentPostgresql {
-	db, err := sql.Open("postgresql", link)
+	db, err := sql.Open("postgres", link)
 	if err != nil {
 		log.Printf("Open postgresql error: %v", err)
 		return nil
